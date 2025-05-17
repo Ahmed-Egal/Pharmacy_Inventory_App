@@ -53,8 +53,6 @@ class Products(db.Model):
     }
 
 
-
-
 @app.route('/')
 def home():
     return 'Hello there, Welcome to Flask!'
@@ -78,11 +76,14 @@ def categories():
     return jsonify([category.to_dict() for category in categories])
 
 
-@app.route('/products/<id>')
+@app.route('/products/<int:id>', methods=['GET'])
 def product_byID(id):
     product = Products.query.get(id)
+
     
     return jsonify(product.to_dict())
+    
+    
  
 
 # in this request, we check if the entry is there. is the date, name, quantity in the posted data. Next check the entered data if it has the correct type, length etc
@@ -136,6 +137,34 @@ def add_product():
 
 
     return {'msg' : 'Product added successfully'}, 201
+
+
+@app.route('/products/<int:id>', methods=['PATCH'])
+def update_product(id):
+    product = Products.query.get(id)
+    if not product:
+        return 'Product not found', 404
+    
+    data = request.get_json()
+
+    if 'products_name' in data:
+        products.products_name = data['products_name']
+    
+    if 'quantity' in data:
+        products.quantity = data['quantity']
+
+    if 'price' in data:
+        products.price = data['price']
+
+    if 'expiry' in data:
+        try:
+            product.expiry = datetime.strptime(data['expiry'], '%Y-%m-%d').date()
+        except ValueError:
+            return 'Invalid expiry date format', 400
+
+    db.session.commit()
+
+    return 'Product updated successfully'
 
 
         
