@@ -142,19 +142,20 @@ def add_product():
 @app.route('/products/<int:id>', methods=['PATCH'])
 def update_product(id):
     product = Products.query.get(id)
+    
     if not product:
         return 'Product not found', 404
     
     data = request.get_json()
 
     if 'products_name' in data:
-        products.products_name = data['products_name']
+        product.products_name = data['products_name']
     
     if 'quantity' in data:
-        products.quantity = data['quantity']
+        product.quantity = data['quantity']
 
     if 'price' in data:
-        products.price = data['price']
+        product.price = data['price']
 
     if 'expiry' in data:
         try:
@@ -165,6 +166,76 @@ def update_product(id):
     db.session.commit()
 
     return 'Product updated successfully'
+
+
+
+@app.route('/products/<int:id>', methods=['PUT'])
+def updating_full_product(id):
+    existing_product = Products.query.get(id)
+
+    data = request.get_json()
+
+    if not existing_product:
+        return 'Product not found', 404
+    
+    if 'products_name' not in data:
+        return "Product name is missing !"
+    elif not isinstance(data['products_name'], str):
+        return "Product name must be a string."
+    elif len(data['products_name']) > 60 :
+        return "Product name must not exceed 60 characters."
+    
+
+    if 'quantity' not in data:
+        return "Quantity is missing!"
+    elif not isinstance(data['quantity'], int):
+        return "Quantity must be an integer"
+    elif not  (0 < data['quantity'] <= 500):
+        return "Quantity has to be between 0 and 500"
+    
+
+    if 'price' not in data:
+        return "Price not included"
+    elif not isinstance(data['price'], int):
+        return "Price must be a number"
+    
+
+    if 'expiry' not in data:
+        return "No expiry date included."
+    try:
+        expiry_date = datetime.strptime(data['expiry'], '%Y-%m-%d').date()
+    except ValueError : 
+        return "Date must be in YYYY-MM-DD format"
+    
+
+
+    existing_product.products_name=data['products_name']
+    existing_product.quantity=data['quantity']
+    existing_product.price=data['price']
+    existing_product.expiry=expiry_date
+
+
+
+    db.session.commit()
+
+    return {'msg' : 'Product updated successfully'}, 200
+
+
+
+@app.route('/products/<int:id>', methods=['DELETE'])
+def delete_product(id):
+    deleting_product = Products.query.get(id)
+
+    if not deleting_product:
+        return "Product not found", 404
+    
+    else:
+        db.session.delete(deleting_product)
+        db.session.commit()
+
+    return "Product successfully deleted", 200
+    
+    
 
 
         
