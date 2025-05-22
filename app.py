@@ -2,6 +2,8 @@ from flask import Flask,jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
+from flask_marshmallow import Marshmallow 
+from marshmallow import Schema, fields 
 
 
 app = Flask(__name__)
@@ -17,6 +19,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tra
 # Initialize SQLAlchemy and Migrate
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
+ma = Marshmallow(app)
 
 
 #define models
@@ -51,6 +54,34 @@ class Products(db.Model):
             "expiry": self.expiry.isoformat() if self.expiry else None,
             "categories_id": self.categories_id
     }
+
+
+class Suppliers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    contact = db.Column(db.String(30), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+
+
+# marshmallow schema
+
+# class SuppliersSchema(ma.Schema):
+#     class Meta:
+#         fields = ('id', 'name','contact', 'email')
+
+
+
+# supplier_schema = SuppliersSchema()
+# suppliers_schema = SuppliersSchema(many=True)
+
+# @app.route('/suppliers', methods=['GET'])
+# def get_suppliers():
+#     all_suppliers = Suppliers.query.all()
+#     return suppliers_schema.dump(all_suppliers)
+
+    
+
+
 
 
 @app.route('/')
